@@ -5,8 +5,11 @@ const github = require('../service/github');
 
 
 
-router.get('/users?',async (req,res,next)=>{   //This endpoint must return a list of GitHub users and the link for the next page.
-                                               //https://api.github.com/users?since=99&per_page=50
+//This endpoint must return a list of GitHub users and the link for the next page.
+//https://api.github.com/users?since=99&per_page=50
+
+
+router.get('/users?',async (req,res,next)=>{  
     try{
 
         github.getUsers(req.query.since,req.query.per_page).then((result) => {
@@ -22,8 +25,12 @@ router.get('/users?',async (req,res,next)=>{   //This endpoint must return a lis
     }
 });
 
-router.get('/users/:username/details',async (req,res)=>{   // GET - /api/users/:username/details   
-                                                           //This endpoint must return the details of a GitHub user
+
+// GET - /api/users/:username/details   
+//This endpoint must return the details of a GitHub user
+
+
+router.get('/users/:username/details',async (req,res)=>{   
   
     try{                                                   
 

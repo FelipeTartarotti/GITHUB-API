@@ -1,132 +1,69 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlewares/auth');
-
 const Project = require('../models/project');
-const Device = require('../models/device');
+const github = require('../service/github');
 
-router.use(authMiddleware);
 
-router.get('/',async (req,res)=>{
+
+router.get('/users?',async (req,res,next)=>{   //This endpoint must return a list of GitHub users and the link for the next page.
+                                               //https://api.github.com/users?since=99&per_page=50
     try{
 
-        const projects = await Project.find().populate(['devices','user']);
-        return res.send({projects})
+        github.getUsers(req.query.since,req.query.per_page).then((result) => {
+            return res.send(result);  
+        })
+        .catch((error) => {
+            return res.send(error);
+        }); 
 
     }catch(err){
-        return res.status(400).send({error: '_Error loading projects_'});
+
+        return res.status(400).send({error: '_Error loading users_'});
     }
 });
 
-router.get('/:userId', async (req,res) =>{
-    try{
-
-        if(req.userId.toString() != req.params.userId.toString()){
-            return res.status(400).send({error: 'Invalid User ID '});
-        }
-    
-        const project = await Project.findOne({user: req.params.userId}).populate(['devices','user']);
-        return res.send({project})
-
-    }catch(err){
-        return res.status(400).send({error: '_Error loading project_'});
-    }
-});
-
-router.post('/:userId', async (req,res)=>{
-    try{
-
-        const {devices} = req.body;
-
-        if(req.userId.toString() != req.params.userId.toString()){
-            return res.status(400).send({error: 'Invalid User ID '});
-        }
-
-        const project = await Project.create({ user: req.params.userId});
-       
-        await Promise.all(devices.map(async device =>{
-            const projectDevice = new Device({...device,project:project._id});
-         
-            await projectDevice.save();
-
-            project.devices.push(projectDevice);
-        }));
-
-        await project.save();
-        
-        return res.send({project});
-
-    }catch(err){
-        return res.status(400).send({error: 'Error creating new project'});
-    }
-});
-
-router.put('/:projectId/:userId', async (req,res)=>{
-    try{
-        const {devices} = req.body;
-
-        if(req.userId.toString() != req.params.userId.toString()){
-            return res.status(400).send({error: 'Invalid User Id'});
-        }
-
-        const project = await Project.findByIdAndUpdate(req.params.projectId, {},{new:true});
-
-        project.devices = [];
-
-        await Device.remove({project: project._id});
-       
-        await Promise.all(devices.map(async device =>{
-            const projectDevice = new Device({...device,project:project._id});
-         
-            await projectDevice.save();
-
-            project.devices.push(projectDevice);
-        }));
-
-        await project.save();
-        
-        return res.send({project});
-
-    }catch(err){
-        console.log(err);
-        return res.status(400).send({error: 'Error updating new project'});
-    }
-});
-
-router.delete('/:deviceId/:userId', async (req,res)=>{
+router.get('/users/:username/details',async (req,res)=>{   // GET - /api/users/:username/details   
+                                                           //This endpoint must return the details of a GitHub user
   
-    try{
+    try{                                                   
 
-        if(req.userId.toString() != req.params.userId.toString()){
-            return res.status(400).send({error: 'Invalid User Id'});
-        }
-
-        const project = await Device.findByIdAndRemove(req.params.deviceId);
- 
-        return res.send(project);
+        github.getUsersDetails(req.params.username).then((result) => {
+            return res.send(result);  
+        })
+        .catch((error) => {
+            return res.send(error);
+        }); 
 
     }catch(err){
-        return res.status(400).send({error: '_Error deleting project_'});
 
+        return res.status(400).send({error: '_Error loading users details_'});
     }
 });
 
-router.delete('/device/:deviceId/:projectId/:userId', async (req,res)=>{
 
-    try{
+//GET - /api/users/:username/repos
+//This endpoint must return a list with all user repositories
 
-        if(req.userId.toString() != req.params.userId.toString()){
-            return res.status(400).send({error: 'Invalid User Id'});
-        }
 
-        const project = await Project.findByIdAndUpdate(
-            req.params.projectId,
-            {$pull: { devices: { $in: req.params.deviceId }}});
-        return res.send(project);
+router.get('/users/:username/repos',async (req,res)=>{   
+   
+    console.log("Repos");
+
+    try{     
+
+        github.getUserRepo(req.params.username).then((result) => {
+            return res.send(result);  
+        })
+        .catch((error) => {
+            return res.send(error);
+        }); 
 
     }catch(err){
-        return res.status(400).send({error: '_Error deleting device_from project'});
+
+        return res.status(400).send({error: '_Error loading users repos_'});
     }
 });
 
-module.exports = app => app.use('/projects',router);
+
+module.exports = app => app.use('/api',router);
+

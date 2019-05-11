@@ -53,8 +53,6 @@ router.get('/users/:username/details',async (req,res)=>{
 
 
 router.get('/users/:username/repos',async (req,res)=>{   
-   
-    console.log("Repos");
 
     try{     
 

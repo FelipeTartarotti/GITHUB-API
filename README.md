@@ -1,5 +1,5 @@
 # api-git
-This is an Api built for Shaw Test that retrives data from github
+This is a Node Api built for retrive data from github
 
 - This endpoint returns a list with all user repositories -> <b>/api/users/FelipeTartarotti/repos</b>
  

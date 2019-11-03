@@ -1,5 +1,5 @@
 # api-git
-This is a Node Api built for retrive data from github
+This is a Node Api that retrives data from GITHUB
 
 - This endpoint returns a list with all user repositories -> <b>/api/users/FelipeTartarotti/repos</b>
  

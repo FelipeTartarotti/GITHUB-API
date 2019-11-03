@@ -1,4 +1,4 @@
-# api-git
+# GITHUB API
 This is a Node Api that retrives data from GITHUB
 
 - This endpoint returns a list with all user repositories -> <b>/api/users/FelipeTartarotti/repos</b>
